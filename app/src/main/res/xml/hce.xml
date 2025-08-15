@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/service_description"
+    android:requireDeviceUnlock="false">
+    <aid-group android:description="@string/group_description" android:category="payment">
+        <aid-filter android:name="325041592E5359532E4444463031" android:description="@string/ppse" />
+        <aid-filter android:name="315041592E5359532E44444630" android:description="@string/pse" />
+        <aid-filter android:name="A0000000031010" android:description="@string/visa_credit_or_debit" />
+        <aid-filter android:name="A0000000041010" android:description="@string/mastercard_credit_or_debit" />
+        <aid-filter android:name="A00000002501" android:description="@string/american_express" />
+        <aid-filter android:name="A0000002771010" android:description="@string/debit_card" />
+        <aid-filter android:name="A0000000043060" android:description="@string/maestro" />
+    </aid-group>
+</host-apdu-service>
