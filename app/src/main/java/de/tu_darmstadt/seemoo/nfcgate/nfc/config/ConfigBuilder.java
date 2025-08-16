@@ -18,6 +18,9 @@ public class ConfigBuilder {
     }
 
     public void add(OptionType ID, byte[] data) {
+        if (data == null) return;
+        if (data.length > 255)
+            throw new IllegalArgumentException("Option data too large (>255)");
         mOptions.add(new ConfigOption(ID, data));
     }
 
@@ -35,28 +38,30 @@ public class ConfigBuilder {
 
     private void parse(byte[] config) {
         mOptions.clear();
-        if (config == null)
-            return;
+        if (config == null) return;
 
         int index = 0;
         final int total = config.length;
 
-        // Safe parsing: treat type/length as unsigned bytes and bounds-check
+        // treat type/length as unsigned and bounds-check
         while (index + 2 <= total) {
             int type = config[index] & 0xFF;
             int length = config[index + 1] & 0xFF;
 
-            // bounds check
+            if (length == 0) {
+                // zero-length is allowed but still consumes 2 bytes
+                add(OptionType.fromType((byte) type), new byte[0]);
+                index += 2;
+                continue;
+            }
+
             if (index + 2 + length > total) {
-                // malformed or truncated config stream; stop parsing to avoid exceptions
+                // truncated/malformed stream: stop parsing to avoid exceptions
                 break;
             }
 
             byte[] data = Arrays.copyOfRange(config, index + 2, index + 2 + length);
-
-            // OptionType.fromType expects a byte in the existing code; convert safely
-            OptionType opt = OptionType.fromType((byte) type);
-            add(opt, data);
+            add(OptionType.fromType((byte) type), data);
             index += length + 2;
         }
     }
