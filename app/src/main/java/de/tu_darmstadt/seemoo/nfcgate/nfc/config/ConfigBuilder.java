@@ -2,6 +2,7 @@ package de.tu_darmstadt.seemoo.nfcgate.nfc.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 /**
  * Represents a NCI config stream.
@@ -34,16 +35,28 @@ public class ConfigBuilder {
 
     private void parse(byte[] config) {
         mOptions.clear();
+        if (config == null)
+            return;
+
         int index = 0;
+        final int total = config.length;
 
-        while(index + 2 < config.length) {
-            byte type = config[index];
-            byte length = config[index + 1];
+        // Safe parsing: treat type/length as unsigned bytes and bounds-check
+        while (index + 2 <= total) {
+            int type = config[index] & 0xFF;
+            int length = config[index + 1] & 0xFF;
 
-            byte[] data = new byte[length];
-            System.arraycopy(config, index + 2, data, 0, length);
+            // bounds check
+            if (index + 2 + length > total) {
+                // malformed or truncated config stream; stop parsing to avoid exceptions
+                break;
+            }
 
-            add(OptionType.fromType(type), data);
+            byte[] data = Arrays.copyOfRange(config, index + 2, index + 2 + length);
+
+            // OptionType.fromType expects a byte in the existing code; convert safely
+            OptionType opt = OptionType.fromType((byte) type);
+            add(opt, data);
             index += length + 2;
         }
     }
@@ -51,8 +64,9 @@ public class ConfigBuilder {
     public byte[] build() {
         int length = 0;
 
-        for (ConfigOption option : mOptions)
+        for (ConfigOption option : mOptions) {
             length += option.len() + 2;
+        }
 
         byte[] data = new byte[length];
         int offset = 0;
