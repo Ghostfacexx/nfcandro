@@ -124,27 +124,10 @@ std::string Option::name() const {
     return ss.str();
 }
 
-void Option::push(config_ref &config, size_t &offset) const {
-    /*
-     * Each config option has:
-     * - 1 byte type
-     * - 1 byte length
-     * - length byte data
-     *
-     * offset is a size_t to avoid overflow when totals > 255.
-     */
-    if (offset + 2 > mTotal && mTotal != 0) // sanity check if caller set mTotal
-        throw std::runtime_error("Config::push: offset out of range");
-
-    config.get()[offset + 0] = type();
-    // clamp length to 255 for the single-byte length field
-    uint8_t length_byte = static_cast<uint8_t>(len() & 0xFF);
-    config.get()[offset + 1] = length_byte;
-
-    if (len() > 0)
-        memcpy(&config.get()[offset + 2], value(), len());
-    offset += len() + 2;
-}
+/*
+ * Note: Option::push is implemented inline in the header (Config.h).
+ * Redefinition here caused the build error; do not provide another definition.
+ */
 
 void Config::build(config_ref &config) {
     mTotal = 0;
