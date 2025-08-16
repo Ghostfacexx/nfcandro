@@ -40,11 +40,9 @@ public class IsoDepReader extends NFCTagReader {
         ConfigBuilder builder = mUnderlying.getConfig();
         IsoDep readerIsoDep = (IsoDep) mReader;
 
-        // guard against null responses and enforce reasonable size limits
         if (mUnderlying instanceof NfcAReader) {
             byte[] hist = readerIsoDep.getHistoricalBytes();
             if (hist != null && hist.length > 0) {
-                // limit to 255 bytes (option length is a single byte in the builder)
                 if (hist.length > 255) {
                     byte[] trimmed = new byte[255];
                     System.arraycopy(hist, 0, trimmed, 0, 255);
