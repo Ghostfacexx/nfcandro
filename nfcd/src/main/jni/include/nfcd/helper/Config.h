@@ -2,26 +2,40 @@
 #define NFCD_CONFIG_H
 
 #include <vector>
+#include <memory>
+#include <cstddef>
+#include <cstdint>
 
-using config_ref = std::unique_ptr<uint8_t>;
+using config_ref = std::unique_ptr<uint8_t[]>;
+
+/*
+ * Helper types: Option stores type and a vector<uint8_t> payload.
+ * Build/parse use size_t for offsets/totals to avoid overflow issues.
+ */
 
 class Option {
 public:
-    Option(uint8_t type, const uint8_t *value, uint8_t len)
-            : mType(type), mValue(value, value + len) {
-
-    }
+    Option(uint8_t type, const uint8_t *value, size_t len)
+            : mType(type), mValue(value, value + len) { }
 
     std::string name() const;
 
     uint8_t type() const { return mType; }
-    uint8_t len() const { return mValue.size(); }
-    const uint8_t *value() { return mValue.data(); }
-    void value(uint8_t *newValue, uint8_t newLen) {
-        mValue = {newValue, newValue + newLen};
+    size_t len() const { return mValue.size(); }
+    const uint8_t *value() const { return mValue.empty() ? nullptr : mValue.data(); }
+
+    void value(const uint8_t *newValue, size_t newLen) {
+        mValue.assign(newValue, newValue + newLen);
     }
 
-    void push(config_ref &config, uint8_t &offset);
+    void push(config_ref &config, size_t &offset) const {
+        // write type and length as single bytes
+        config[offset + 0] = mType;
+        config[offset + 1] = static_cast<uint8_t>(mValue.size() & 0xFF);
+        if (!mValue.empty())
+            memcpy(&config[offset + 2], mValue.data(), mValue.size());
+        offset += mValue.size() + 2;
+    }
 
 protected:
     uint8_t mType;
@@ -32,9 +46,10 @@ class Config {
 public:
     Config() = default;
 
-    uint8_t total() const { return mTotal; }
+    // total bytes required
+    size_t total() const { return mTotal; }
 
-    void add(uint8_t type, uint8_t *value, uint8_t len = 1) {
+    void add(uint8_t type, const uint8_t *value, size_t len = 1) {
         mOptions.emplace_back(type, value, len);
     }
 
@@ -43,13 +58,13 @@ public:
     }
 
     void build(config_ref &config);
-    void parse(uint8_t size, uint8_t *stream);
+    void parse(size_t size, const uint8_t *stream);
 
     const std::vector<Option> &options() const { return mOptions; }
     std::vector<Option> &options() { return mOptions; }
 
 protected:
-    uint8_t mTotal = 0;
+    size_t mTotal = 0;
     std::vector<Option> mOptions;
 };
 
