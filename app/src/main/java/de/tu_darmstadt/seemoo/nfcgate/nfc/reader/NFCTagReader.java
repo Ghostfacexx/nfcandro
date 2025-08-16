@@ -59,7 +59,6 @@ public abstract class NFCTagReader {
      */
     public byte[] transceive(byte[] command) {
         try {
-            // Prefer type-safe calls instead of reflection.
             if (mReader instanceof IsoDep) {
                 return ((IsoDep) mReader).transceive(command);
             } else if (mReader instanceof NfcA) {
@@ -71,12 +70,11 @@ public abstract class NFCTagReader {
             } else if (mReader instanceof NfcV) {
                 return ((NfcV) mReader).transceive(command);
             } else {
-                // Fallback to reflection if an unexpected TagTechnology is present, but log it.
+                // fallback to reflection but log clearly
                 Method transceive = mReader.getClass().getMethod("transceive", byte[].class);
                 return (byte[]) transceive.invoke(mReader, command);
             }
         } catch (Exception e) {
-            // Do not swallow exceptions silently. Log full context so captures aren't corrupted unknowingly.
             Log.e("NFCGATE", "transceive failed for " + mReader.getClass().getName() + " command="
                     + (command == null ? "null" : bytesToHex(command)), e);
             return null;
@@ -110,7 +108,6 @@ public abstract class NFCTagReader {
 
         // look for higher layer technology
         if (technologies.contains(Technologies.IsoDep)) {
-            // an IsoDep tag can be backed by either NfcA or NfcB technology
             if (technologies.contains(Technologies.A))
                 return new IsoDepReader(tag, Technologies.A);
             else if (technologies.contains(Technologies.B))
