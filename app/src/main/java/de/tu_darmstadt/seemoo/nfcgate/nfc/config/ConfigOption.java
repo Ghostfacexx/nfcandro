@@ -11,7 +11,7 @@ public class ConfigOption {
 
     ConfigOption(OptionType ID, byte[] data) {
         mID = ID;
-        mData = data;
+        mData = data == null ? new byte[0] : data;
     }
 
     ConfigOption(OptionType ID, byte data) {
@@ -23,10 +23,26 @@ public class ConfigOption {
     }
 
     public void push(byte[] data, int offset) {
-        data[offset] = mID.getID();
-        data[offset + 1] = (byte)mData.length;
+        if (mData.length > 255)
+            throw new IllegalStateException("ConfigOption length > 255");
 
-        System.arraycopy(mData, 0, data, offset + 2, mData.length);
+        data[offset] = mID.getID();
+        data[offset + 1] = (byte) (mData.length & 0xFF);
+
+        if (mData.length > 0)
+            System.arraycopy(mData, 0, data, offset + 2, mData.length);
+    }
+
+    // from https://stackoverflow.com/a/9855338/207861
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     @Override
@@ -43,7 +59,7 @@ public class ConfigOption {
         }
 
         result.append(", Value: 0x");
-        result.append(Utils.bytesToHex(mData));
+        result.append(bytesToHex(mData));
 
         return result.toString();
     }
