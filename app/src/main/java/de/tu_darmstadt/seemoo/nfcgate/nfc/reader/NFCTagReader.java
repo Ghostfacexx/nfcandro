@@ -1,9 +1,7 @@
 package de.tu_darmstadt.seemoo.nfcgate.nfc.reader;
 
-import android.nfc.Tag;
-import android.nfc.tech.TagTechnology;
+import android.nfc.tech.*;
 import androidx.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
@@ -38,7 +36,7 @@ public abstract class NFCTagReader {
         try{
             mReader.connect();
         } catch(IOException e) {
-            e.printStackTrace();
+            Log.e("NFCGATE", "Failed to connect to tag technology", e);
         }
     }
 
@@ -49,7 +47,7 @@ public abstract class NFCTagReader {
         try{
             mReader.close();
         } catch(IOException e) {
-            e.printStackTrace();
+            Log.e("NFCGATE", "Failed to close tag technology", e);
         }
     }
 
@@ -61,14 +59,40 @@ public abstract class NFCTagReader {
      */
     public byte[] transceive(byte[] command) {
         try {
-            // there is no common interface for TagTechnology...
-            Method transceive = mReader.getClass().getMethod("transceive", byte[].class);
-            return (byte[])transceive.invoke(mReader, command);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
+            // Prefer type-safe calls instead of reflection.
+            if (mReader instanceof IsoDep) {
+                return ((IsoDep) mReader).transceive(command);
+            } else if (mReader instanceof NfcA) {
+                return ((NfcA) mReader).transceive(command);
+            } else if (mReader instanceof NfcB) {
+                return ((NfcB) mReader).transceive(command);
+            } else if (mReader instanceof NfcF) {
+                return ((NfcF) mReader).transceive(command);
+            } else if (mReader instanceof NfcV) {
+                return ((NfcV) mReader).transceive(command);
+            } else {
+                // Fallback to reflection if an unexpected TagTechnology is present, but log it.
+                Method transceive = mReader.getClass().getMethod("transceive", byte[].class);
+                return (byte[]) transceive.invoke(mReader, command);
+            }
+        } catch (Exception e) {
+            // Do not swallow exceptions silently. Log full context so captures aren't corrupted unknowingly.
+            Log.e("NFCGATE", "transceive failed for " + mReader.getClass().getName() + " command="
+                    + (command == null ? "null" : bytesToHex(command)), e);
             return null;
         }
+    }
+
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    static String bytesToHex(byte[] bytes) {
+        if (bytes == null) return "null";
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     /**
@@ -81,7 +105,7 @@ public abstract class NFCTagReader {
      * Picks the highest available technology for a given Tag
      */
     @NonNull
-    public static NFCTagReader create(Tag tag) {
+    public static NFCTagReader create(android.nfc.Tag tag) {
         List<String> technologies = Arrays.asList(tag.getTechList());
 
         // look for higher layer technology
@@ -93,7 +117,7 @@ public abstract class NFCTagReader {
                 return new IsoDepReader(tag, Technologies.B);
             else
                 Log.e("NFCGATE", "Unknown tag technology backing IsoDep" +
-                        TextUtils.join(", ", technologies));
+                        android.text.TextUtils.join(", ", technologies));
         }
 
         for (String tech : technologies) {
