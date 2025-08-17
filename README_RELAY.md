@@ -25,30 +25,70 @@ This is a relay-only variant of NFCGate that works without root access or the Xp
 
 ## Building
 
-### Build the Relay APK
+### Prerequisites
+- Android SDK with API level 21+ (minimum)
+- Android SDK with API level 35 (target/compile)
+- Java 17 (for Gradle compatibility)
+- Gradle 7.6+ (included in wrapper)
+
+### Build Commands
 
 ```bash
-# Clean build
+# Clean any previous builds
 ./gradlew clean
 
-# Build debug APK for relay flavor
+# Build debug APK for relay flavor only
 ./gradlew assembleRelayDebug
 
-# Build release APK for relay flavor  
+# Build release APK for relay flavor only  
 ./gradlew assembleRelayRelease
+
+# Build all flavors (full and relay) for comparison
+./gradlew assembleDebug
+
+# List all available build tasks
+./gradlew tasks --group="build"
 ```
 
-The built APK will be located at:
-- Debug: `app/build/outputs/apk/relay/debug/app-relay-debug.apk`
-- Release: `app/build/outputs/apk/relay/release/app-relay-release.apk`
+The built APKs will be located at:
+- Relay Debug: `app/build/outputs/apk/relay/debug/app-relay-debug.apk`
+- Relay Release: `app/build/outputs/apk/relay/release/app-relay-release.apk`
+
+### Build Validation
+
+A validation script is included to verify the relay configuration:
+
+```bash
+./validate_relay.sh
+```
+
+This checks that all required files are present and properly configured.
 
 ### Install
 
 ```bash
-# Install via ADB
+# Install via ADB (developer mode required)
 adb install app/build/outputs/apk/relay/debug/app-relay-debug.apk
 
-# Or copy to device and install manually
+# Or copy APK to device and install manually through file manager
+# Settings > Security > Unknown Sources must be enabled
+```
+
+### Testing the Build
+
+The repository includes a smoke test to verify the relay APK builds correctly:
+
+```bash
+# Validate configuration
+./validate_relay.sh
+
+# Test build (if network connectivity available)
+./gradlew assembleRelayDebug --dry-run
+```
+
+For CI/CD integration, the relay APK build can be tested with:
+```bash
+./gradlew assembleRelayDebug --offline
 ```
 
 ## Usage
@@ -100,13 +140,41 @@ This relay-only variant has the following limitations compared to the full NFCGa
 - Advanced NFC configuration and low-level protocol manipulation
 - Clone mode and other advanced features
 - Complex logging and analysis tools
+- Dependencies on nfcd module (contains native Xposed hooks)
 
 ### Simplified Implementation
 - Uses standard Android NFC APIs only
 - No system-level NFC service modifications
-- Simplified network protocol
-- Basic HCE implementation
+- Simplified network protocol using raw TCP sockets
+- Basic HCE implementation for tag emulation
 - Minimal UI focused on relay functionality
+- Self-contained in relay product flavor
+
+### Technical Changes Made
+
+#### Build System
+- Added `relay` product flavor in app/build.gradle
+- Excluded nfcd module dependency for relay flavor only
+- Removed Xposed repository from build configuration
+- Set relay-specific application ID: `de.tu_darmstadt.seemoo.nfcgate.relay`
+
+#### Application Structure
+- New relay-specific package: `de.tu_darmstadt.seemoo.nfcgate.relay`
+- Standalone activity replacing complex fragment-based navigation
+- Self-contained service architecture
+- No dependencies on Xposed or native components
+
+#### NFC Implementation
+- Uses standard Android `NfcAdapter.enableReaderMode()` for reading
+- Uses `HostApduService` for tag emulation (HCE)
+- No low-level NFC service hooks or modifications
+- Limited to ISO-DEP protocol support initially
+
+#### Network Protocol
+- Simplified TCP socket communication
+- Basic length-prefixed message format
+- No complex protobuf integration (future enhancement)
+- Direct socket management without connection pooling
 
 ## Troubleshooting
 
