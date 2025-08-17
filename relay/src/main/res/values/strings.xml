@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NFC Relay</string>
+    <string name="service_description">NFC APDU Relay Service</string>
+    <string name="aid_group_description">Accepts all APDU commands for relaying</string>
+    <string name="host_label">Remote Host:</string>
+    <string name="host_hint">192.168.1.100</string>
+    <string name="port_label">Remote Port:</string>
+    <string name="port_hint">8080</string>
+    <string name="start_relay">Start Relay</string>
+    <string name="stop_relay">Stop Relay</string>
+    <string name="log_placeholder">Log messages will appear here...</string>
+    <string name="relay_service_title">NFC Relay Active</string>
+    <string name="relay_service_content">Relaying NFC commands to remote host</string>
+    <string name="relay_started">Relay service started</string>
+    <string name="relay_stopped">Relay service stopped</string>
+    <string name="please_enter_host_port">Please enter both host and port</string>
+</resources>
