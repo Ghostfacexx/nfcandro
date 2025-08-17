@@ -86,6 +86,20 @@ android {
         }
     }
 
+    flavorDimensions "version"
+    productFlavors {
+        full {
+            dimension "version"
+            // Full version with all features (default)
+        }
+        relay {
+            dimension "version"
+            applicationId 'de.tu_darmstadt.seemoo.nfcgate.relay'
+            versionNameSuffix '-relay'
+            // Relay-only version without root/Xposed dependencies
+        }
+    }
+
     buildFeatures {
         buildConfig true
     }
@@ -101,7 +115,9 @@ dependencies {
     //This must *NOT* be included
     //compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation project(':nfcd')
+    // nfcd only for full flavor (contains Xposed/root functionality)
+    fullImplementation project(':nfcd')
+    
     implementation project(':protobuf')
     implementation "com.google.protobuf:protobuf-javalite:3.24.1"
 

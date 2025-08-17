@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name_relay">NFCGate Relay</string>
+    <string name="hce_service_description">NFC Relay Host Card Emulation</string>
+    <string name="hce_aid_group_description">Relay AID Group</string>
+</resources>

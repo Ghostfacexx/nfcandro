@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="NFCGate Relay"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No root or Xposed framework required"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:paddingBottom="24dp"
+        android:textColor="@android:color/darker_gray" />
+
+    <!-- Server Configuration -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Server Configuration"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <EditText
+        android:id="@+id/edit_hostname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Hostname or IP address"
+        android:inputType="textUri"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/edit_port"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Port number"
+        android:inputType="number"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Mode Selection -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Relay Mode"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <Switch
+        android:id="@+id/switch_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reader Mode"
+        android:checked="true"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Control Button -->
+    <Button
+        android:id="@+id/btn_start_stop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Relay"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/holo_green_dark"
+        android:textColor="@android:color/white"
+        android:padding="12dp" />
+
+    <!-- Status -->
+    <TextView
+        android:id="@+id/text_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Relay Stopped"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:paddingBottom="16dp" />
+
+    <!-- Log View -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Log"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingBottom="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/black"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/text_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:text="" />
+
+    </ScrollView>
+
+</LinearLayout>
